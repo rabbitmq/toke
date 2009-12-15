@@ -47,7 +47,7 @@ $(LIBRARY): $(C_SOURCE) $(C_HEADERS)
 
 clean:
 	rm -f $(EBIN_DIR)/*.beam
-	rm $(LIBRARY)
+	rm -f $(LIBRARY)
 
 run: all
 	$(ERL) $(ERL_OPTS)
