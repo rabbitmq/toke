@@ -26,7 +26,7 @@
 
 -export([new/1, delete/1, tune/5, set_cache/2, set_xm_size/2, set_df_unit/2,
          open/3, close/1, insert/3, insert_new/3, insert_concat/3,
-         insert_async/3, delete/2, get/2, stop/1]).
+         insert_async/3, delete/2, get/2, fold/3, stop/1]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3,
 	 terminate/2]).
@@ -55,6 +55,7 @@
 -define(TOKE_INSERT_ASYNC,  11).
 -define(TOKE_DELETE,        12).
 -define(TOKE_GET,           13).
+-define(TOKE_GET_ALL,       14).
 
 %%----------------------------------------------------------------------------
 %% Public API
@@ -122,6 +123,10 @@ delete(Pid, Key) when is_binary(Key) ->
 %% Fetch a key from the db. Returns 'not_found' on occasion.
 get(Pid, Key) when is_binary(Key) ->
     gen_server:call(Pid, {get, Key}, infinity).
+
+%% Fold over every value in the db.
+fold(Fun, Init, Pid) ->
+    gen_server:call(Pid, {fold, Fun, Init}, infinity).
 
 %% Stop the driver and close the port.
 stop(Pid) ->
@@ -216,6 +221,11 @@ handle_call({get, Key}, _From, Port) ->
     port_command(Port, <<?TOKE_GET/native, KeySize:64/native, Key/binary>>),
     simple_reply(Port);
 
+handle_call({fold, Fun, Init}, _From, Port) ->
+    port_command(Port, <<?TOKE_GET_ALL/native>>),
+    Result = receive_all(Fun, Init),
+    {reply, Result, Port};
+
 handle_call(stop, _From, Port) ->
     {stop, normal, ok, Port}. %% gen_server now calls terminate/2
 
@@ -249,3 +259,9 @@ insert_sync(Port, Command, Key, Value) ->
 
 simple_reply(Port) ->
     {reply, receive {toke_reply, Result} -> Result end, Port}.
+
+receive_all(Fun, Acc) ->
+    receive
+        {toke_reply, ok}    -> Acc;
+        {toke_reply, Value} -> receive_all(Fun, Fun(Value, Acc))
+    end.

@@ -496,6 +496,24 @@ void toke_get(TokeData *td, ErlDrvTermData **spec, Reader *reader,
   }
 }
 
+int toke_get_all1(TokeData *td, ErlDrvPort port) {
+  int valuesize = 0;
+  char *value = NULL;
+  while (NULL != (value = tchdbiternext(td->hdb, &valuesize))) {
+    td->get_result_spec[3] = (ErlDrvTermData)value;
+    td->get_result_spec[4] = valuesize;
+    driver_output_term(port, td->get_result_spec, GET_RESULT_SPEC_LEN);
+    td->get_result_spec[3] = (ErlDrvTermData)NULL;
+    td->get_result_spec[4] = 0;
+    free(value);
+  }
+  return OK;
+}
+
+int toke_get_all(TokeData *td, Reader *reader, ErlDrvPort port) {
+  return (tchdbiterinit(td->hdb)) ? toke_get_all1(td, port) : TOKYO_ERROR;
+}
+
 static void toke_outputv(ErlDrvData drv_data, ErlIOVec *ev)
 {
   Reader reader;
@@ -562,6 +580,10 @@ static void toke_outputv(ErlDrvData drv_data, ErlIOVec *ev)
 
     case TOKE_GET:
       toke_get(td, &spec, &reader, port);
+      break;
+
+    case TOKE_GET_ALL:
+      toke_with_hdb(td, &spec, &reader, port, toke_get_all);
       break;
 
     default:

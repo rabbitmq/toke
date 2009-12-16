@@ -33,4 +33,16 @@ test() ->
     ok = toke_drv:close(Toke2),
     ok = toke_drv:delete(Toke2),
     ok = toke_drv:stop(Toke2),
+
+    {ok, Toke3} = toke_drv:start_link(),
+    ok = toke_drv:new(Toke3),
+    ok = toke_drv:set_cache(Toke3, 1000000),
+    ok = toke_drv:tune(Toke3, 2000000, 5, 15, [large]),
+    ok = toke_drv:open(Toke3, "/tmp/test", [read]),
+    Sum = trunc((1000000*1000001)/2) - 10,
+    Sum = toke_drv:fold(fun (<<Value:32/native>>, Acc) -> Value + Acc end, 0, Toke3),
+    ok = toke_drv:close(Toke3),
+    ok = toke_drv:delete(Toke3),
+    ok = toke_drv:stop(Toke3),
+
     passed.
