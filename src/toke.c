@@ -84,7 +84,7 @@ void dump_ev(ErlIOVec *ev) {
       printf("NULL\r\n");
     } else {
       ErlDrvBinary* bin = ev->binv[idx];
-      printf("[orig_bytes = %p; orig_size = %zd]\r\n",
+      printf("[orig_bytes = %p; orig_size = %ld]\r\n",
              bin->orig_bytes, bin->orig_size);
     }
   }

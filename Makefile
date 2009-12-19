@@ -37,13 +37,16 @@ CC ?= gcc
 CFLAGS ?=
 CC_OPTS:=-Wall -O2 -shared -fpic -I $(SOURCE_DIR) -ltokyocabinet $(CFLAGS)
 
-all: $(TARGETS)
+all: $(EBIN_DIR) $(TARGETS)
 
-$(EBIN_DIR)/%.beam: $(SOURCE_DIR)/%.erl
+$(EBIN_DIR)/%.beam: $(SOURCE_DIR)/%.erl 
 	$(ERLC) $(ERLC_OPTS) $<
 
 $(LIBRARY): $(C_SOURCE) $(C_HEADERS)
 	$(CC) $(CC_OPTS) -o $@ $<
+
+$(EBIN_DIR):
+	mkdir -p $(EBIN_DIR)
 
 clean:
 	rm -f $(EBIN_DIR)/*.beam
