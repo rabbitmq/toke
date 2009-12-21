@@ -57,6 +57,11 @@
 -define(TOKE_GET,           13).
 -define(TOKE_GET_ALL,       14).
 
+%% KEEP IN SYNC WITH TOKE.H
+-define(TUNE_KEYS,          [large, deflate, bzip, tcbs, excodec]).
+-define(OPEN_KEYS,          [read, write, create, truncate, no_lock,
+                             lock_no_block, sync_on_transaction]).
+
 %%----------------------------------------------------------------------------
 %% Public API
 %%----------------------------------------------------------------------------
@@ -152,13 +157,7 @@ handle_call(delete, _From, Port) ->
 
 %% int64_t bnum, int8_t apow, int8_t fpow, uint8_t opts
 handle_call({tune, BNum, APow, FPow, Opts}, _From, Port) ->
-    Opt = lists:foldl( %% KEEP IN SYNC WITH TOKE.H
-            fun (large, Acc)   -> Acc bor (1 bsl 0);
-                (deflate, Acc) -> Acc bor (1 bsl 1);
-                (bzip, Acc)    -> Acc bor (1 bsl 2);
-                (tcbs, Acc)    -> Acc bor (1 bsl 3);
-                (excodec, Acc) -> Acc bor (1 bsl 4)
-            end, 0, Opts),
+    Opt = build_bit_mask(Opts, ?TUNE_KEYS),
     port_command(Port, <<?TOKE_TUNE/native,
                         BNum:64/signed-integer-native,
                         APow:8/signed-integer-native,
@@ -185,15 +184,7 @@ handle_call({set_df_unit, DefragStepUnit}, _From, Port) ->
     simple_reply(Port);
 
 handle_call({open, Path, Modes}, _From, Port) ->
-    Mode = lists:foldl( %% KEEP IN SYNC WITH TOKE.H
-             fun (read, Acc)                -> Acc bor (1 bsl 0);
-                 (write, Acc)               -> Acc bor (1 bsl 1);
-                 (create, Acc)              -> Acc bor (1 bsl 2);
-                 (truncate, Acc)            -> Acc bor (1 bsl 3);
-                 (no_lock, Acc)             -> Acc bor (1 bsl 4);
-                 (lock_no_block, Acc)       -> Acc bor (1 bsl 5);
-                 (sync_on_transaction, Acc) -> Acc bor (1 bsl 6)
-             end, 0, Modes),
+    Mode = build_bit_mask(Modes, ?OPEN_KEYS),
     port_command(Port, <<?TOKE_OPEN/native, (length(Path)):64/native,
                         (list_to_binary(Path))/binary, Mode:8/native>>),
     simple_reply(Port);
@@ -245,6 +236,16 @@ terminate(_Reason, Port) ->
 %%----------------------------------------------------------------------------
 %% Internal helpers
 %%----------------------------------------------------------------------------
+
+build_bit_mask(Flags, Keys) ->
+    {Int, _Index} =
+        lists:foldl(fun (Key, {Acc, Index}) ->
+                            {case proplists:get_bool(Key, Flags) of
+                                 true  -> Acc bor (1 bsl Index);
+                                 false -> Acc
+                             end, 1 + Index}
+                    end, {0, 0}, Keys),
+    Int.
 
 insert_async(Port, Command, Key, Value) ->
     KeySize = size(Key),
