@@ -143,7 +143,7 @@ stop(Pid) ->
 
 init([]) ->
     erl_ddll:start(),
-    ok = erl_ddll:load_driver("ebin", ?LIBNAME),
+    ok = erl_ddll:load_driver("priv", ?LIBNAME),
     Port = open_port({spawn_driver, ?LIBNAME}, [binary, stream]),
     {ok, Port}.
 

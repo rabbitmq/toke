@@ -20,12 +20,14 @@
 #
 
 SOURCE_DIR:=src
+C_SOURCE_DIR:=c_src
 EBIN_DIR:=ebin
+PRIV_DIR:=priv
 ERL_SOURCE:=$(wildcard $(SOURCE_DIR)/*.erl)
 BEAM_TARGETS:=$(patsubst $(SOURCE_DIR)/%.erl, $(EBIN_DIR)/%.beam, $(ERL_SOURCE))
-LIBRARY:=$(EBIN_DIR)/libtoke.so
-C_SOURCE:=$(wildcard $(SOURCE_DIR)/*.c)
-C_HEADERS:=$(wildcard $(SOURCE_DIR)/*.h)
+LIBRARY:=$(PRIV_DIR)/libtoke.so
+C_SOURCE:=$(wildcard $(C_SOURCE_DIR)/*.c)
+C_HEADERS:=$(wildcard $(C_SOURCE_DIR)/*.h)
 TARGETS:=$(BEAM_TARGETS) $(LIBRARY)
 
 ERLC ?= erlc
@@ -37,9 +39,9 @@ CC ?= gcc
 CFLAGS ?=
 CC_OPTS:=-Wall -O2 -shared -fpic -I $(SOURCE_DIR) -ltokyocabinet $(CFLAGS)
 
-all: $(EBIN_DIR) $(TARGETS)
+all: $(EBIN_DIR) $(PRIV_DIR) $(TARGETS)
 
-$(EBIN_DIR)/%.beam: $(SOURCE_DIR)/%.erl 
+$(EBIN_DIR)/%.beam: $(SOURCE_DIR)/%.erl
 	$(ERLC) $(ERLC_OPTS) $<
 
 $(LIBRARY): $(C_SOURCE) $(C_HEADERS)
@@ -47,6 +49,9 @@ $(LIBRARY): $(C_SOURCE) $(C_HEADERS)
 
 $(EBIN_DIR):
 	mkdir -p $(EBIN_DIR)
+
+$(PRIV_DIR):
+	mkdir -p $(PRIV_DIR)
 
 clean:
 	rm -f $(EBIN_DIR)/*.beam
