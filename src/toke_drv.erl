@@ -263,6 +263,6 @@ simple_reply(Port) ->
 
 receive_all(Fun, Acc) ->
     receive
-        {toke_reply, ok}    -> Acc;
-        {toke_reply, Value} -> receive_all(Fun, Fun(Value, Acc))
+        {toke_reply, ok}         -> Acc;
+        {toke_reply, Key, Value} -> receive_all(Fun, Fun(Key, Value, Acc))
     end.

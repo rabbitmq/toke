@@ -44,6 +44,7 @@
 
 #define ATOM_SPEC_LEN          6
 #define GET_RESULT_SPEC_LEN    7
+#define ITER_RESULT_SPEC_LEN   10
 #define READER_ERROR_SPEC_LEN  11
 #define TOKYO_ERROR_SPEC_LEN   11
 
@@ -51,8 +52,9 @@ typedef struct {
   ErlDrvPort port;
   TCHDB *hdb;
   ErlDrvTermData* get_result_spec;   /* store these in here so that */
-  ErlDrvTermData* reader_error_spec; /* they're not shared between  */
-  ErlDrvTermData* tokyo_error_spec;  /* threads                     */
+  ErlDrvTermData* iter_result_spec;  /* they're not shared between  */
+  ErlDrvTermData* reader_error_spec; /* threads                     */
+  ErlDrvTermData* tokyo_error_spec;
 } TokeData;
 
 typedef struct {
@@ -262,6 +264,19 @@ static ErlDrvData toke_start(ErlDrvPort port, char *buff)
   td->get_result_spec[5] = ERL_DRV_TUPLE;
   td->get_result_spec[6] = 2;
 
+  td->iter_result_spec =
+    (ErlDrvTermData*)driver_alloc(ITER_RESULT_SPEC_LEN * sizeof(ErlDrvTermData));
+  td->iter_result_spec[0] = ERL_DRV_ATOM;
+  td->iter_result_spec[1] = driver_mk_atom("toke_reply");
+  td->iter_result_spec[2] = ERL_DRV_BUF2BINARY;
+  td->iter_result_spec[3] = (ErlDrvTermData)NULL;
+  td->iter_result_spec[4] = 0;
+  td->iter_result_spec[5] = ERL_DRV_BUF2BINARY;
+  td->iter_result_spec[6] = (ErlDrvTermData)NULL;
+  td->iter_result_spec[7] = 0;
+  td->iter_result_spec[8] = ERL_DRV_TUPLE;
+  td->iter_result_spec[9] = 3;
+
   td->reader_error_spec =
     (ErlDrvTermData*)driver_alloc(READER_ERROR_SPEC_LEN * sizeof(ErlDrvTermData));
   td->reader_error_spec[0] = ERL_DRV_ATOM;
@@ -299,6 +314,7 @@ static void toke_stop(ErlDrvData drv_data)
   if (NULL != td->hdb) {
     tchdbclose(td->hdb);
     driver_free((char*)td->get_result_spec);
+    driver_free((char*)td->iter_result_spec);
     driver_free((char*)td->reader_error_spec);
     driver_free((char*)td->tokyo_error_spec);
   }
@@ -497,16 +513,21 @@ void toke_get(TokeData *td, ErlDrvTermData **spec, Reader *reader,
 }
 
 int toke_get_all1(TokeData *td, ErlDrvPort port) {
-  int valuesize = 0;
-  char *value = NULL;
-  while (NULL != (value = tchdbiternext(td->hdb, &valuesize))) {
-    td->get_result_spec[3] = (ErlDrvTermData)value;
-    td->get_result_spec[4] = valuesize;
-    driver_output_term(port, td->get_result_spec, GET_RESULT_SPEC_LEN);
-    td->get_result_spec[3] = (ErlDrvTermData)NULL;
-    td->get_result_spec[4] = 0;
-    free(value);
+  TCXSTR *key = tcxstrnew();
+  TCXSTR *value = tcxstrnew();
+  while (tchdbiternext3(td->hdb, key, value)) {
+    td->iter_result_spec[3] = (ErlDrvTermData)(tcxstrptr(key));
+    td->iter_result_spec[4] = tcxstrsize(key);
+    td->iter_result_spec[6] = (ErlDrvTermData)(tcxstrptr(value));
+    td->iter_result_spec[7] = tcxstrsize(value);
+    driver_output_term(port, td->iter_result_spec, ITER_RESULT_SPEC_LEN);
+    td->iter_result_spec[3] = (ErlDrvTermData)NULL;
+    td->iter_result_spec[4] = 0;
+    td->iter_result_spec[6] = (ErlDrvTermData)NULL;
+    td->iter_result_spec[7] = 0;
   }
+  tcxstrdel(value);
+  tcxstrdel(key);
   return OK;
 }
 
