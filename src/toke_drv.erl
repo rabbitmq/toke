@@ -143,7 +143,9 @@ stop(Pid) ->
 
 init([]) ->
     erl_ddll:start(),
-    ok = erl_ddll:load_driver("priv", ?LIBNAME),
+    {file, Path} = code:is_loaded(?MODULE),
+    Dir = filename:join(filename:dirname(Path), "../priv"),
+    ok = erl_ddll:load_driver(Dir, ?LIBNAME),
     Port = open_port({spawn_driver, ?LIBNAME}, [binary, stream]),
     {ok, Port}.
 
