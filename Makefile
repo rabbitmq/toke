@@ -37,7 +37,7 @@ ERL_OPTS:=-pa $(EBIN_DIR) +K true +A30
 
 CC ?= gcc
 CFLAGS ?=
-CC_OPTS:=-Wall -O2 -shared -fpic -I $(SOURCE_DIR) -ltokyocabinet $(CFLAGS)
+CC_OPTS:=-Wall -pedantic -std=c99 -O2 -shared -fpic -I $(SOURCE_DIR) -ltokyocabinet $(CFLAGS)
 
 all: $(EBIN_DIR) $(PRIV_DIR) $(TARGETS)
 
