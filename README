@@ -1,6 +1,8 @@
 Toke
 ====
 
+Requires at least Erlang/OTP R13B01
+
 Toke is a very minimal Erlang driver for Tokyo Cabinet. It only wraps
 the hash API (tchdb*) and doesn't even implement all of that.
 
