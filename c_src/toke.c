@@ -371,13 +371,6 @@ static void toke_stop(const ErlDrvData drv_data) {
     driver_free((char*)td->tokyo_error_spec);
   }
   driver_free((char*)drv_data);
-
-  driver_free((char*)no_command_atom_spec);
-  driver_free((char*)invalid_command_atom_spec);
-  driver_free((char*)no_such_command_atom_spec);
-  driver_free((char*)ok_atom_spec);
-  driver_free((char*)invalid_state_atom_spec);
-  driver_free((char*)not_found_atom_spec);
 }
 
 void toke_new(TokeData *const td, ErlDrvTermData **const spec,

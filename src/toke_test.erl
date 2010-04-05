@@ -5,6 +5,13 @@
 test() ->
     {ok, Toke} = toke_drv:start_link(),
     ok = toke_drv:new(Toke),
+
+    {ok, Toke2} = toke_drv:start_link(),
+    ok = toke_drv:new(Toke2),
+
+    {ok, Toke3} = toke_drv:start_link(),
+    ok = toke_drv:new(Toke3),
+
     ok = toke_drv:set_cache(Toke, 1000000),
     ok = toke_drv:tune(Toke, 2000000, 5, 15, [large]),
     ok = toke_drv:open(Toke, "/tmp/test", [read, write, create, truncate]),
@@ -24,8 +31,6 @@ test() ->
     ok = toke_drv:delete(Toke),
     ok = toke_drv:stop(Toke),
 
-    {ok, Toke2} = toke_drv:start_link(),
-    ok = toke_drv:new(Toke2),
     ok = toke_drv:set_cache(Toke2, 1000000),
     ok = toke_drv:tune(Toke2, 2000000, 5, 15, [large]),
     ok = toke_drv:open(Toke2, "/tmp/test", [read]),
@@ -34,8 +39,6 @@ test() ->
     ok = toke_drv:delete(Toke2),
     ok = toke_drv:stop(Toke2),
 
-    {ok, Toke3} = toke_drv:start_link(),
-    ok = toke_drv:new(Toke3),
     ok = toke_drv:set_cache(Toke3, 1000000),
     ok = toke_drv:tune(Toke3, 2000000, 5, 15, [large]),
     ok = toke_drv:open(Toke3, "/tmp/test", [read]),
