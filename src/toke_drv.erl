@@ -67,7 +67,6 @@
 %%----------------------------------------------------------------------------
 
 start_link() ->
-    process_flag(trap_exit, true),
     gen_server:start_link(?MODULE, [], []).
 
 %% Set up the driver with a new TCHDB object.
