@@ -549,6 +549,31 @@ int toke_delete(TokeData *const td, Reader *const reader,
     ((tchdbout(td->hdb, key, *keysize)) ? OK : TOKYO_ERROR) : READER_ERROR;
 }
 
+int toke_delete_if_eq(TokeData *const td, Reader *const reader,
+                      const ErlDrvPort port) {
+  const uint64_t *keysize = NULL;
+  const char *key = NULL;
+  const uint64_t *valuesize = NULL;
+  const char *value = NULL;
+  if (read_binary(reader, &key, &keysize) &&
+      read_binary(reader, &value, &valuesize)) {
+    int found_valuesize = 0;
+    char *const found_value = tchdbget(td->hdb, key, *keysize, &found_valuesize);
+    if (NULL == found_value) {
+      return OK;
+    } else {
+      if (*valuesize == found_valuesize &&
+          0 == memcmp(value, found_value, found_valuesize)) {
+        return tchdbout(td->hdb, key, *keysize) ? OK : TOKYO_ERROR;
+      } else {
+        return OK;
+      }
+    }
+  } else {
+    return READER_ERROR;
+  }
+}
+
 void toke_get(TokeData *const td, ErlDrvTermData **const spec,
               Reader *const reader, const ErlDrvPort port) {
   if (NULL == td->hdb) {
@@ -660,6 +685,10 @@ static void toke_outputv(ErlDrvData drv_data, ErlIOVec *const ev) {
 
     case TOKE_DELETE:
       toke_with_hdb(td, &spec, &reader, port, toke_delete);
+      break;
+
+    case TOKE_DELETE_IF_EQ:
+      toke_with_hdb(td, &spec, &reader, port, toke_delete_if_eq);
       break;
 
     case TOKE_GET:

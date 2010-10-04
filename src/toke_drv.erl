@@ -26,7 +26,8 @@
 
 -export([new/1, delete/1, tune/5, set_cache/2, set_xm_size/2, set_df_unit/2,
          open/3, close/1, insert/3, insert_new/3, insert_concat/3,
-         insert_async/3, delete/2, get/2, fold/3, stop/1]).
+         insert_async/3, delete/2, delete_if_value_eq/3, get/2, fold/3,
+         stop/1]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3,
 	 terminate/2]).
@@ -54,8 +55,9 @@
 -define(TOKE_INSERT_CONCAT, 10).
 -define(TOKE_INSERT_ASYNC,  11).
 -define(TOKE_DELETE,        12).
--define(TOKE_GET,           13).
--define(TOKE_GET_ALL,       14).
+-define(TOKE_DELETE_IF_EQ,  13).
+-define(TOKE_GET,           14).
+-define(TOKE_GET_ALL,       15).
 
 %% KEEP IN SYNC WITH TOKE.H
 -define(TUNE_KEYS,          [large, deflate, bzip, tcbs, excodec]).
@@ -123,6 +125,10 @@ insert_async(Pid, Key, Value) when is_binary(Key) andalso is_binary(Value) ->
 %% Delete a key from the db.
 delete(Pid, Key) when is_binary(Key) ->
     gen_server:call(Pid, {delete, Key}, infinity).
+
+%% Delete the key iff the current value matches the supplied value.
+delete_if_value_eq(Pid, Key, Obj) when is_binary(Key) andalso is_binary(Obj) ->
+    gen_server:call(Pid, {delete_if_value_eq, Key, Obj}, infinity).
 
 %% Fetch a key from the db. Returns 'not_found' on occasion.
 get(Pid, Key) when is_binary(Key) ->
@@ -208,6 +214,9 @@ handle_call({delete, Key}, _From, Port) ->
     port_command(Port, <<?TOKE_DELETE/native, KeySize:64/native, Key/binary>>),
     simple_reply(Port);
 
+handle_call({delete_if_value_eq, Key, Obj}, _From, Port) ->
+    insert_sync(Port, ?TOKE_DELETE_IF_EQ, Key, Obj);
+
 handle_call({get, Key}, _From, Port) ->
     KeySize = size(Key),
     port_command(Port, <<?TOKE_GET/native, KeySize:64/native, Key/binary>>),
@@ -222,8 +231,7 @@ handle_call(stop, _From, Port) ->
     {stop, normal, ok, Port}. %% gen_server now calls terminate/2
 
 handle_cast({insert_async, Key, Value}, Port) ->
-    insert_async(Port, ?TOKE_INSERT_ASYNC, Key, Value),
-    {noreply, Port}.
+    insert_async(Port, ?TOKE_INSERT_ASYNC, Key, Value).
 
 handle_info(_Msg, State) ->
     {noreply, State}.
