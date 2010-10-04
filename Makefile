@@ -19,43 +19,26 @@
 #   Contributor(s): ______________________________________.
 #
 
-SOURCE_DIR:=src
-C_SOURCE_DIR:=c_src
-EBIN_DIR:=ebin
-PRIV_DIR:=priv
-ERL_SOURCE:=$(wildcard $(SOURCE_DIR)/*.erl)
-BEAM_TARGETS:=$(patsubst $(SOURCE_DIR)/%.erl, $(EBIN_DIR)/%.beam, $(ERL_SOURCE))
+C_SOURCE_DIR:=$(PACKAGE_DIR)/c_src
+PRIV_DIR:=$(PACKAGE_DIR)/priv
 LIBRARY:=$(PRIV_DIR)/libtoke.so
 C_SOURCE:=$(wildcard $(C_SOURCE_DIR)/*.c)
 C_HEADERS:=$(wildcard $(C_SOURCE_DIR)/*.h)
-TARGETS:=$(BEAM_TARGETS) $(LIBRARY)
-
-ERLC ?= erlc
-ERL ?= erl
-ERLC_OPTS:=-o $(EBIN_DIR) -Wall -v
-ERL_OPTS:=-pa $(EBIN_DIR) +K true +A30
+EXTRA_TARGETS:=$(LIBRARY)
+EXTRA_PACKAGE_DIRS:=$(PRIV_DIR)
 
 CC ?= gcc
 CFLAGS ?=
-CC_OPTS:=-Wall -pedantic -std=c99 -O2 -shared -fpic -I $(SOURCE_DIR) -ltokyocabinet $(CFLAGS)
+CC_OPTS:=-Wall -pedantic -std=c99 -O2 -shared -fpic -ltokyocabinet $(CFLAGS)
 
-all: $(EBIN_DIR) $(PRIV_DIR) $(TARGETS)
-
-$(EBIN_DIR)/%.beam: $(SOURCE_DIR)/%.erl
-	$(ERLC) $(ERLC_OPTS) $<
-
-$(LIBRARY): $(C_SOURCE) $(C_HEADERS)
+$(LIBRARY): $(C_SOURCE) $(C_HEADERS) | $(PRIV_DIR)
 	$(CC) $(CC_OPTS) -o $@ $<
 
-$(EBIN_DIR):
-	mkdir -p $(EBIN_DIR)
-
 $(PRIV_DIR):
-	mkdir -p $(PRIV_DIR)
+	mkdir -p $@
 
-clean:
-	rm -f $(EBIN_DIR)/*.beam
-	rm -f $(LIBRARY)
+$(PACKAGE_DIR)/clean_RM:=$(PRIV_DIR)
+$(PACKAGE_DIR)/clean::
+	rm -rf $($@_RM)
 
-run: all
-	$(ERL) $(ERL_OPTS)
+include ../include.mk
