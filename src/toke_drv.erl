@@ -27,10 +27,10 @@
 -export([new/1, delete/1, tune/5, set_cache/2, set_xm_size/2, set_df_unit/2,
          open/3, close/1, insert/3, insert_new/3, insert_concat/3,
          insert_async/3, delete/2, delete_if_value_eq/3, get/2, fold/3,
-         stop/1]).
+         update_atomically/3, stop/1]).
 
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, code_change/3,
-	 terminate/2]).
+         terminate/2]).
 
 %% Tokyo Cabinet driver for Erlang
 
@@ -138,6 +138,10 @@ get(Pid, Key) when is_binary(Key) ->
 fold(Fun, Init, Pid) ->
     gen_server:call(Pid, {fold, Fun, Init}, infinity).
 
+%% Atomically modify the specified value.
+update_atomically(Pid, Key, Fun) ->
+    gen_server:call(Pid, {update_atomically, Key, Fun}, infinity).
+
 %% Stop the driver and close the port.
 stop(Pid) ->
     gen_server:call(Pid, stop, infinity).
@@ -218,14 +222,19 @@ handle_call({delete_if_value_eq, Key, Obj}, _From, Port) ->
     insert_sync(Port, ?TOKE_DELETE_IF_EQ, Key, Obj);
 
 handle_call({get, Key}, _From, Port) ->
-    KeySize = size(Key),
-    port_command(Port, <<?TOKE_GET/native, KeySize:64/native, Key/binary>>),
-    simple_reply(Port);
+    {reply, internal_get(Key, Port), Port};
 
 handle_call({fold, Fun, Init}, _From, Port) ->
     port_command(Port, <<?TOKE_GET_ALL/native>>),
     Result = receive_all(Fun, Init),
     {reply, Result, Port};
+
+handle_call({update_atomically, Key, Fun}, _From, Port) ->
+    case internal_get(Key, Port) of
+        not_found -> ok;
+        Entry -> insert_async(Port, ?TOKE_INSERT_ASYNC, Key, Fun(Entry))
+    end,
+    {reply, ok, Port};
 
 handle_call(stop, _From, Port) ->
     {stop, normal, ok, Port}. %% gen_server now calls terminate/2
@@ -245,6 +254,11 @@ terminate(_Reason, Port) ->
 %%----------------------------------------------------------------------------
 %% Internal helpers
 %%----------------------------------------------------------------------------
+
+internal_get(Key, Port) ->
+    KeySize = size(Key),
+    port_command(Port, <<?TOKE_GET/native, KeySize:64/native, Key/binary>>),
+    receive {toke_reply, Result} -> Result end.
 
 build_bit_mask(Flags, Keys) ->
     {Int, _Index} =

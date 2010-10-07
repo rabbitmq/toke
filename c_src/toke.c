@@ -545,8 +545,15 @@ int toke_delete(TokeData *const td, Reader *const reader,
                 const ErlDrvPort port) {
   const uint64_t *keysize = NULL;
   const char *key = NULL;
-  return (read_binary(reader, &key, &keysize)) ?
-    ((tchdbout(td->hdb, key, *keysize)) ? OK : TOKYO_ERROR) : READER_ERROR;
+  if (read_binary(reader, &key, &keysize)) {
+    if (tchdbout(td->hdb, key, *keysize) || TCENOREC == tchdbecode(td->hdb)) {
+      return OK;
+    } else {
+      return TOKYO_ERROR;
+    }
+  } else {
+    return READER_ERROR;
+  }
 }
 
 int toke_delete_if_eq(TokeData *const td, Reader *const reader,
