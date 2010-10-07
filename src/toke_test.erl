@@ -24,6 +24,7 @@ test() ->
     Ten = toke_drv:get(Toke, Ten),
     ok = toke_drv:delete_if_value_eq(Toke, Ten, Ten),
     not_found = toke_drv:get(Toke, Ten),
+    ok = toke_drv:delete(Toke, Ten),
     ok = toke_drv:insert(Toke, Ten, Ten),
     Ten = toke_drv:get(Toke, Ten),
     Nine = <<9:32/native>>,
