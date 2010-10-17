@@ -18,4 +18,25 @@
 #
 #   Contributor(s): ______________________________________.
 #
-include ../include.mk
+
+C_SOURCE_DIR:=$(PACKAGE_DIR)/c_src
+PRIV_DIR:=$(PACKAGE_DIR)/priv
+LIBRARY:=$(PRIV_DIR)/libtoke.so
+C_SOURCE:=$(wildcard $(C_SOURCE_DIR)/*.c)
+C_HEADERS:=$(wildcard $(C_SOURCE_DIR)/*.h)
+EXTRA_TARGETS:=$(LIBRARY)
+EXTRA_PACKAGE_DIRS:=$(PRIV_DIR)
+
+CC ?= gcc
+CFLAGS ?=
+CC_OPTS:=-Wall -pedantic -std=c99 -O2 -shared -fpic -ltokyocabinet $(CFLAGS)
+
+$(LIBRARY): $(C_SOURCE) $(C_HEADERS) | $(PRIV_DIR)
+	$(CC) $(CC_OPTS) -o $@ $<
+
+$(PRIV_DIR):
+	mkdir -p $@
+
+$(PACKAGE_DIR)/clean_RM:=$(PRIV_DIR)
+$(PACKAGE_DIR)/clean::
+	rm -rf $($@_RM)
