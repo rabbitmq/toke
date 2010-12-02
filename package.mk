@@ -31,12 +31,13 @@ CC ?= gcc
 CFLAGS ?=
 CC_OPTS:=-Wall -pedantic -std=c99 -O2 -shared -fpic -ltokyocabinet $(CFLAGS)
 
-$(LIBRARY): $(C_SOURCE) $(C_HEADERS) | $(PRIV_DIR)
-	$(CC) $(CC_OPTS) -o $@ $<
+define package_targets
 
-$(PRIV_DIR):
-	mkdir -p $@
+$(LIBRARY): $(C_SOURCE) $(C_HEADERS)
+	@mkdir -p $(PRIV_DIR)
+	$(CC) $(CC_OPTS) -o $$@ $(C_SOURCE)
 
-$(PACKAGE_DIR)/clean_RM:=$(PRIV_DIR)
-$(PACKAGE_DIR)/clean::
-	rm -rf $($@_RM)
+$(PACKAGE_DIR)+clean::
+	rm -rf $(PRIV_DIR)
+
+endef
