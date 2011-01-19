@@ -12,13 +12,8 @@
 /*                                                                           */
 /*   The Original Code is Toke.                                              */
 /*                                                                           */
-/*   The Initial Developers of the Original Code are LShift Ltd.             */
-/*                                                                           */
-/*   Portions created by LShift Ltd are Copyright (C) 2009 LShift Ltd.       */
-/*                                                                           */
-/*   All Rights Reserved.                                                    */
-/*                                                                           */
-/*   Contributor(s): ______________________________________.                 */
+/*   The Initial Developers of the Original Code are VMware, Inc.            */
+/*   Copyright (c) 2009-2011 VMware, Inc.  All rights reserved.              */
 /*                                                                           */
 /* ------------------------------------------------------------------------- */
 
