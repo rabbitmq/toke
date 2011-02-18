@@ -31,7 +31,7 @@ CC ?= gcc
 CFLAGS ?=
 CC_OPTS:=-Wall -pedantic -std=c99 -O2 -shared -fpic -ltokyocabinet $(CFLAGS)
 
-define package_targets
+define package_rules
 
 $(LIBRARY): $(C_SOURCE) $(C_HEADERS)
 	@mkdir -p $(PRIV_DIR)
