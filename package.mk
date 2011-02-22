@@ -20,24 +20,26 @@
 #
 
 C_SOURCE_DIR:=$(PACKAGE_DIR)/c_src
-PRIV_DIR:=$(PACKAGE_DIR)/priv
-LIBRARY:=$(PRIV_DIR)/libtoke.so
+LIBRARY:=$(C_SOURCE_DIR)/libtoke.so
 C_SOURCE:=$(wildcard $(C_SOURCE_DIR)/*.c)
 C_HEADERS:=$(wildcard $(C_SOURCE_DIR)/*.h)
-EXTRA_TARGETS:=$(LIBRARY)
-EXTRA_PACKAGE_DIRS:=$(PRIV_DIR)
 
 CC ?= gcc
 CFLAGS ?=
 CC_OPTS:=-Wall -pedantic -std=c99 -O2 -shared -fpic -ltokyocabinet $(CFLAGS)
 
+CONSTRUCT_APP_PREREQS:=$(LIBRARY)
+define construct_app_commands
+	mkdir -p $(APP_DIR)/priv
+	cp $(LIBRARY) $(APP_DIR)/priv
+endef
+
 define package_rules
 
 $(LIBRARY): $(C_SOURCE) $(C_HEADERS)
-	@mkdir -p $(PRIV_DIR)
 	$(CC) $(CC_OPTS) -o $$@ $(C_SOURCE)
 
 $(PACKAGE_DIR)+clean::
-	rm -rf $(PRIV_DIR)
+	rm -rf $(LIBRARY)
 
 endef
