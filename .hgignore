@@ -4,4 +4,4 @@
 ^dist/
 ^cover/
 ^erl_crash.dump$
-^c_src/libtoke.so
+^c_src/libtoke.so$
