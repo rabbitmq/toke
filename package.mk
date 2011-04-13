@@ -24,8 +24,6 @@ LIBRARY:=$(C_SOURCE_DIR)/libtoke.so
 C_SOURCE:=$(wildcard $(C_SOURCE_DIR)/*.c)
 C_HEADERS:=$(wildcard $(C_SOURCE_DIR)/*.h)
 
-NOT_BUILDABLE:=$(shell toke/check-deps.sh)
-
 CC ?= gcc
 CFLAGS ?=
 CC_OPTS:=-Wall -pedantic -std=c99 -O2 -shared -fpic -ltokyocabinet $(CFLAGS)
