@@ -28,6 +28,7 @@ $(PACKAGE_DIR)+clean::
 # The reason for unpacking is that we can't dynamically load libraries
 # that are within .ez files.
 $(PACKAGE_DIR)+pre-test:: $(PACKAGE_DIR)/dist/.done.$(PACKAGE_VERSION)
+	rm -rf $(PACKAGE_DIR)/dist/$(APP_NAME)-$(PACKAGE_VERSION)
 	unzip $(PACKAGE_DIR)/dist/$(APP_NAME)-$(PACKAGE_VERSION).ez -d $(PACKAGE_DIR)/dist
 
 endef
