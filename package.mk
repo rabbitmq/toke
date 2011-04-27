@@ -1,3 +1,5 @@
+STANDALONE_TEST_COMMANDS:=test_toke:test()
+
 C_SOURCE_DIR:=$(PACKAGE_DIR)/c_src
 LIBRARY:=$(C_SOURCE_DIR)/libtoke.so
 C_SOURCE:=$(wildcard $(C_SOURCE_DIR)/*.c)
@@ -20,5 +22,12 @@ $(LIBRARY): $(C_SOURCE) $(C_HEADERS)
 
 $(PACKAGE_DIR)+clean::
 	rm -rf $(LIBRARY)
+
+# This is disgusting. Why can't I just depend on _and_ unpack
+# $(EZ_FILE) ? Instead we have .done. targets to confuse matters...
+# The reason for unpacking is that we can't dynamically load libraries
+# that are within .ez files.
+$(PACKAGE_DIR)+pre-test:: $(PACKAGE_DIR)/dist/.done.$(PACKAGE_VERSION)
+	unzip $(PACKAGE_DIR)/dist/$(APP_NAME)-$(PACKAGE_VERSION).ez -d $(PACKAGE_DIR)/dist
 
 endef

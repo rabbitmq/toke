@@ -14,7 +14,7 @@
 %%  Copyright (c) 2009-2011 VMware, Inc.  All rights reserved.
 %%
 
--module(toke_test).
+-module(test_toke).
 
 -compile([export_all]).
 
