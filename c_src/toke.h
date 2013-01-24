@@ -13,7 +13,7 @@
 /*   The Original Code is Toke.                                              */
 /*                                                                           */
 /*   The Initial Developers of the Original Code are VMware, Inc.            */
-/*   Copyright (c) 2009-2012 VMware, Inc.  All rights reserved.              */
+/*   Copyright (c) 2009-2013 VMware, Inc.  All rights reserved.              */
 /*                                                                           */
 /* ------------------------------------------------------------------------- */
 
