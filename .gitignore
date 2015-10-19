@@ -1,10 +1,12 @@
-*~
 .sw?
 .*.sw?
 *.beam
-erl_crash.dump
-/build/
+/.erlang.mk/
 /cover/
-/dist/
+/deps/
+/doc/
 /ebin/
-/c_src/libtoke.so
+/logs/
+/plugins/
+
+/toke.d
