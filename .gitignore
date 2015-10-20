@@ -10,3 +10,4 @@
 /plugins/
 
 /toke.d
+/c_src/env.mk
