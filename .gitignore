@@ -1,5 +1,6 @@
 .sw?
 .*.sw?
+*.o
 *.beam
 /.erlang.mk/
 /cover/
@@ -11,3 +12,4 @@
 
 /toke.d
 /c_src/env.mk
+/priv/toke.so
