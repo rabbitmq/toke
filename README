@@ -13,6 +13,6 @@ forget to pass the --enable-off64 flag to configure, otherwise 'large'
 support won't work.
 
 You will want to read both the Tokyo Cabinet API Spec
-( http://1978th.net/tokyocabinet/spex-en.html#tchdbapi ) and at least
+( https://1978th.net/tokyocabinet/spex-en.html#tchdbapi ) and at least
 the Public API section of toke_drv.erl. Also see toke_test.erl for how
 to use it.
